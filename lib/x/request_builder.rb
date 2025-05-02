@@ -50,8 +50,8 @@ module X
       end
     end
 
-   def escape_query_params(uri)
-     URI(uri).tap { |u| u.query = CGI.escape_params(URI.decode_www_form(u.query)) if u.query }
+    def escape_query_params(uri)
+      URI(uri).tap { |u| u.query = CGI.escape_params(URI.decode_www_form(u.query)) if u.query }
     end
   end
 end
