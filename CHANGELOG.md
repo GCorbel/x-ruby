@@ -1,3 +1,19 @@
+## [0.15.4] - 2025-05-02
+* Use dedicated endpoints for chunked media upload (d54d0d0)
+
+## [0.15.3] - 2025-04-24
+* Add missing base64 dependency (3ca8512)
+* Set binary read for media files to be uploaded (fd066e6)
+
+## [0.15.2] - 2025-03-28
+* Use media_id instead of media_key to upload media (f1dd577)
+
+## [0.15.1] - 2025-03-24
+* Fix bug in MediaUploader#await_processing (136dff8)
+* Refactor RedirectHandler#build_request (fd379c3)
+* Escape space in query string as %20, not + (2d2df75)
+* Don't escape commas in query parameters (e7d9056)
+
 ## [0.15.0] - 2025-02-06
 * Change media upload to use the API v2 endpoints (eca2b88)
 
