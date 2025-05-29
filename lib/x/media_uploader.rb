@@ -19,9 +19,9 @@ module X
     def upload(client:, file_path:, media_category:, media_type: infer_media_type(file_path, media_category),
       boundary: SecureRandom.hex)
       validate!(file_path:, media_category:)
-      upload_body = construct_upload_body(file_path:, media_type:, boundary:)
+      upload_body = construct_upload_body(file_path:, media_type:, media_category:, boundary:)
       headers = {"Content-Type" => "multipart/form-data, boundary=#{boundary}"}
-      client.post("media/upload?media_category=#{media_category}", upload_body, headers:)
+      client.post("media/upload", upload_body, headers:)
     end
 
     def chunked_upload(client:, file_path:, media_category:, media_type: infer_media_type(file_path,
@@ -107,9 +107,11 @@ module X
       Dir.delete(dirname) if Dir.empty?(dirname)
     end
 
-    def construct_upload_body(file_path:, media_type:, segment_index: nil, boundary: SecureRandom.hex)
+    def construct_upload_body(file_path:, media_type:, media_category: nil, segment_index: nil,
+      boundary: SecureRandom.hex)
       body = ""
       body += "--#{boundary}\r\nContent-Disposition: form-data; name=\"segment_index\"\r\n\r\n#{segment_index}\r\n" if segment_index
+      body += "--#{boundary}\r\nContent-Disposition: form-data; name=\"media_category\"\r\n\r\n#{media_category}\r\n" if media_category
       "#{body}--#{boundary}\r\n" \
         "Content-Disposition: form-data; name=\"media\"; filename=\"#{File.basename(file_path)}\"\r\n" \
         "Content-Type: #{media_type}\r\n\r\n" \
