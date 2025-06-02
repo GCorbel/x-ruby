@@ -1,3 +1,4 @@
+require "json"
 require "securerandom"
 require "tmpdir"
 
@@ -42,6 +43,13 @@ module X
       end
     end
 
+    def await_processing!(client:, media:)
+      status = await_processing(client:, media:)
+      raise "Media processing failed" if status["processing_info"]["state"] == "failed"
+
+      status
+    end
+
     private
 
     def validate!(file_path:, media_category:)
@@ -57,22 +65,18 @@ module X
       when TWEET_GIF, DM_GIF then GIF_MIME_TYPE
       when TWEET_VIDEO, DM_VIDEO then MP4_MIME_TYPE
       when SUBTITLES then SUBRIP_MIME_TYPE
-      else MIME_TYPE_MAP[File.extname(file_path).delete(".").downcase] || DEFAULT_MIME_TYPE
+      else MIME_TYPE_MAP.fetch(File.extname(file_path).delete(".").downcase, DEFAULT_MIME_TYPE)
       end
     end
 
     def split(file_path, chunk_size)
-      file_number = -1
-      file_paths = [] # @type var file_paths: Array[String]
-
-      File.open(file_path, "rb") do |f|
-        while (chunk = f.read(chunk_size))
-          path = "#{Dir.mktmpdir}/x#{format("%03d", file_number += 1)}"
-          File.binwrite(path, chunk)
-          file_paths << path
-        end
+      file_size = File.size(file_path)
+      segment_count = (file_size.to_f / chunk_size).ceil
+      (0...segment_count).map do |segment_index|
+        segment_path = "#{Dir.mktmpdir}/x#{format("%03d", segment_index + 1)}"
+        File.binwrite(segment_path, File.binread(file_path, chunk_size, segment_index * chunk_size))
+        segment_path
       end
-      file_paths
     end
 
     def init(client:, file_path:, media_type:, media_category:)
